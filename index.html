@@ -1,0 +1,763 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>FaceAttend – Auth Portal</title>
+     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: linear-gradient(135deg, #0a2540, #1a365d);
+      --surface:   #ffffff;
+      --card:      #ffffff;
+      --border:    #dce3ef;
+      --accent:    #3a7bd5;
+      --accent-g:  #2d64b8;
+      --green:     #2ebd7a;
+      --red:       #e05050;
+      --text:      #1e2740;
+      --muted:     #8494b0;
+      --input-bg:  #f6f8fc;
+      --r:         13px;
+      --shadow:    0 12px 40px rgba(60,90,160,.10);
+    }
+
+    html, body {
+  height: 100%;
+  font-family: 'DM Sans', sans-serif;
+
+  background-size: cover;
+  color: var(--text);
+  overflow: hidden;
+}
+
+
+    /* BG */
+    .bg-grid {
+      position: fixed; inset: 0; z-index: 0;
+      background-image:
+        linear-gradient(rgba(58,123,213,.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(58,123,213,.06) 1px, transparent 1px);
+      background-size: 40px 40px;
+    }
+    .bg-blob {
+      position: fixed; border-radius: 50%;
+      filter: blur(110px); opacity: .22; pointer-events: none; z-index: 0;
+    }
+    .blob-a { width: 600px; height: 600px; background: #a8c4f5; top: -180px; left: -160px; }
+    .blob-b { width: 500px; height: 500px; background: #c4a8f5; bottom: -120px; right: -120px; }
+    .blob-c { width: 320px; height: 320px; background: #a8f5d4; top: 55%; left: 52%; transform: translate(-50%,-50%); }
+
+    /* PAGE SYSTEM */
+    .page {
+      position: fixed; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      padding: 20px 16px;
+      overflow-y: auto;
+      opacity: 0; pointer-events: none;
+      transform: translateY(22px) scale(.98);
+      transition: opacity .4s ease, transform .4s ease;
+      z-index: 1;
+    }
+    .page.active {
+      opacity: 1; pointer-events: all;
+      transform: translateY(0) scale(1);
+    }
+
+    /* CARD */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 42px 40px 38px;
+      width: 100%; max-width: 620px;
+      box-shadow: var(--shadow);
+      position: relative;
+    }
+
+    /* LOGO */
+    .logo {
+      display: flex; align-items: center; gap: 10px;
+      margin-bottom: 6px;
+    }
+    .logo-icon {
+      width: 38px; height: 38px; border-radius: 9px;
+      background: linear-gradient(135deg, #3d8ef0, #8d3df0);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; flex-shrink: 0;
+    }
+    .logo-text {
+      font-family: 'Syne', sans-serif;
+      font-size: 20px; font-weight: 800;
+      background: linear-gradient(100deg, #3d8ef0 30%, #a06df0);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    h1 {
+      font-family: 'Syne', sans-serif;
+      font-size: 27px; font-weight: 800;
+      color: var(--text); line-height: 1.2;
+      margin-bottom: 6px;
+    }
+    .subtitle {
+      font-size: 14px; color: var(--muted);
+      margin-bottom: 28px; line-height: 1.5;
+    }
+    .subtitle span { color: var(--accent); font-weight: 500; }
+
+    /* FIELDS */
+    .field { margin-bottom: 17px; }
+    .field label {
+      display: block; font-size: 13px; font-weight: 500;
+      color: var(--muted); margin-bottom: 7px;
+    }
+    .field input {
+      width: 100%;
+      background: var(--input-bg);
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      padding: 11px 14px;
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14.5px; outline: none;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .field input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(58,123,213,.12);
+    }
+    .field input::placeholder { color: var(--muted); }
+
+    /* BUTTONS */
+    .btn {
+      display: inline-flex; align-items: center;
+      justify-content: center; gap: 8px;
+      border: none; border-radius: 9px; cursor: pointer;
+      font-family: 'DM Sans', sans-serif; font-weight: 500;
+      font-size: 14.5px; padding: 12px 20px;
+      transition: all .22s ease;
+    }
+    .btn-primary {
+      width: 100%; background: var(--accent);
+      color: #fff; font-size: 15px; padding: 13px;
+      margin-top: 4px;
+    }
+    .btn-primary:hover { background: var(--accent-g); transform: translateY(-1px); box-shadow: 0 8px 24px rgba(58,123,213,.25); }
+    .btn-outline {
+      background: transparent; border: 1px solid var(--border);
+      color: var(--muted);
+    }
+    .btn-outline:hover { border-color: var(--accent); color: var(--accent); background: rgba(58,123,213,.06); }
+    .btn-sm { padding: 8px 14px; font-size: 13px; border-radius: 7px; }
+    .btn-green { background: var(--green); color: #080b12; font-weight: 600; }
+    .btn-green:hover { background: #26c07a; transform: translateY(-1px); }
+    .btn-red { background: var(--red); color: #fff; }
+    .btn-red:hover { background: #d94444; transform: translateY(-1px); }
+
+    /* DIVIDER */
+    .divider {
+      display: flex; align-items: center; gap: 12px;
+      margin: 20px 0; color: var(--muted); font-size: 13px;
+    }
+    .divider::before, .divider::after {
+      content: ''; flex: 1; height: 1px; background: var(--border);
+    }
+
+    /* HOME CHOICES */
+    #page-home .card {
+      max-width: 680px;
+      display: flex; flex-direction: column; align-items: center;
+      padding: 50px 44px 44px; text-align: center;
+    }
+    #page-home h1 { font-size: 34px; margin-bottom: 8px; }
+    #page-home .subtitle { margin-bottom: 36px; font-size: 15px; }
+
+    .choices {
+      display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; width: 100%;
+    }
+    .choice-card {
+      background: #f7f9fd;
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 28px 18px 24px;
+      cursor: pointer;
+      transition: all .25s ease;
+      display: flex; flex-direction: column; align-items: center; gap: 14px;
+    }
+    .choice-card:hover {
+      border-color: var(--accent);
+      background: rgba(58,123,213,.06);
+      transform: translateY(-4px);
+      box-shadow: 0 10px 30px rgba(58,123,213,.12);
+    }
+    .choice-icon {
+      width: 58px; height: 58px; border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 28px;
+    }
+    .ci-reg  { background: rgba(58,123,213,.10); }
+    .ci-user { background: rgba(46,189,122,.10); }
+    .ci-adm  { background: rgba(224,80,80,.10);  }
+    .choice-label {
+      font-family: 'Syne', sans-serif; font-weight: 700;
+      font-size: 15px; color: var(--text); margin-bottom: 4px;
+    }
+    .choice-desc { font-size: 12.5px; color: var(--muted); line-height: 1.5; }
+
+    /* BADGE */
+    .badge {
+      display: inline-block; padding: 3px 10px; border-radius: 20px;
+      font-size: 11.5px; font-weight: 600; letter-spacing: .5px;
+      margin-bottom: 12px;
+    }
+    .badge-blue  { background: rgba(58,123,213,.12);  color: #3a7bd5; }
+    .badge-green { background: rgba(46,189,122,.12);  color: #2ebd7a; }
+    .badge-red   { background: rgba(224,80,80,.12);   color: #e05050; }
+
+    /* CAMERA */
+    .camera-wrap {
+      background: var(--input-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden; position: relative;
+      margin-bottom: 10px;
+      aspect-ratio: 4/3;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .camera-wrap video,
+    .camera-wrap canvas {
+      width: 100%; height: 100%; object-fit: cover; display: none;
+    }
+    .camera-placeholder {
+      display: flex; flex-direction: column;
+      align-items: center; gap: 10px;
+      color: #a0adc4; font-size: 13px;
+      padding: 20px; text-align: center;
+    }
+    .camera-placeholder .cam-icon { font-size: 42px; opacity: .45; }
+    .cam-label { font-size: 12.5px; color: var(--muted); text-align: center; margin-bottom: 10px; }
+    .cam-controls { display: flex; gap: 10px; flex-wrap: wrap; }
+
+    .scan-line {
+      display: none; position: absolute; left: 0; right: 0; height: 2px;
+      background: linear-gradient(90deg, transparent, #3a7bd5, transparent);
+      animation: scan 2.4s ease-in-out infinite;
+    }
+    @keyframes scan { 0%{top:0} 50%{top:calc(100% - 2px)} 100%{top:0} }
+    .camera-wrap.streaming .scan-line { display: block; }
+
+    .corner {
+      position: absolute; width: 18px; height: 18px;
+      border-color: #3a7bd5; border-style: solid; opacity: 0;
+      transition: opacity .3s;
+    }
+    .corner-tl { top:8px; left:8px;   border-width: 2px 0 0 2px; }
+    .corner-tr { top:8px; right:8px;  border-width: 2px 2px 0 0; }
+    .corner-bl { bottom:8px; left:8px;  border-width: 0 0 2px 2px; }
+    .corner-br { bottom:8px; right:8px; border-width: 0 2px 2px 0; }
+    .camera-wrap.streaming .corner { opacity: 1; }
+
+    .captured-tick {
+      position: absolute; top:50%; left:50%;
+      transform: translate(-50%,-50%);
+      background: rgba(46,189,122,.92); color:#fff;
+      width:52px; height:52px; border-radius:50%;
+      display:none; align-items:center; justify-content:center;
+      font-size:26px; font-weight:700;
+      animation: pop .3s ease;
+    }
+    @keyframes pop { from{transform:translate(-50%,-50%) scale(.5)} to{transform:translate(-50%,-50%) scale(1)} }
+
+    /* BACK */
+    .back-link {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 13px; color: var(--muted);
+      cursor: pointer; margin-bottom: 20px;
+      transition: color .2s;
+    }
+    .back-link:hover { color: var(--accent); }
+
+    /* FOOTER NOTE */
+    .form-note {
+      text-align: center; font-size: 13px;
+      color: var(--muted); margin-top: 18px;
+    }
+    .form-note a {
+      color: var(--accent); cursor: pointer;
+      text-decoration: none; font-weight: 500;
+    }
+    .form-note a:hover { text-decoration: underline; }
+
+    /* ADMIN WARNING */
+    .admin-notice {
+      display: flex; align-items: center; gap: 10px;
+      background: rgba(224,80,80,.07);
+      border: 1px solid rgba(224,80,80,.18);
+      border-radius: 9px; padding: 12px 14px;
+      font-size: 13px; color: #c94444;
+      margin-bottom: 22px;
+    }
+
+    /* REGISTER 2-COL */
+    #page-register .card { max-width: 640px; padding: 40px 38px 36px; }
+    .reg-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 0 30px; align-items: start;
+    }
+    .section-label {
+      font-size: 11px; font-weight: 600; letter-spacing: 1px;
+      text-transform: uppercase; color: var(--muted);
+      margin-bottom: 14px;
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 640px) {
+      .choices { grid-template-columns: 1fr; }
+      .reg-grid { grid-template-columns: 1fr; }
+      .card { padding: 28px 20px 26px; }
+      #page-home h1 { font-size: 26px; }
+      #page-home .card { padding: 34px 20px 30px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="bg-grid"></div>
+<div class="bg-blob blob-a"></div>
+<div class="bg-blob blob-b"></div>
+<div class="bg-blob blob-c"></div>
+
+
+<!-- ═══════ PAGE: HOME ═══════ -->
+<div class="page active" id="page-home">
+  <div class="card">
+
+    <div class="logo" style="justify-content:center; margin-bottom:16px;">
+      <div class="logo-icon">🎭</div>
+      <span class="logo-text">FaceAttend</span>
+    </div>
+
+    <h1>Face Recognition<br/>Attendance System</h1>
+    <p class="subtitle">
+      AI-powered attendance tracking via real-time <span>facial recognition</span>.<br/>
+      Choose how you'd like to proceed.
+    </p>
+
+    <div class="choices">
+      <div class="choice-card" onclick="goTo('page-register')">
+        <div class="choice-icon ci-reg">📷</div>
+        <div class="choice-label">Register</div>
+      </div>
+      <div class="choice-card" onclick="goTo('page-user')">
+        <div class="choice-icon ci-user">👤</div>
+        <div class="choice-label">User Login</div>
+      </div>
+      <div class="choice-card" onclick="goTo('page-admin')">
+        <div class="choice-icon ci-adm">🛡️</div>
+        <div class="choice-label">Admin Login</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ═══════ PAGE: REGISTER ═══════ -->
+<div class="page" id="page-register">
+  <div class="card">
+
+    <span class="back-link" onclick="goTo('page-home')">← Back</span>
+
+    <div class="logo">
+      <div class="logo-icon">📷</div>
+      <span class="logo-text">FaceAttend</span>
+    </div>
+    <div class="badge badge-blue" style="margin-top:10px;">NEW ACCOUNT</div>
+    <h1>Create Account</h1>
+    <p class="subtitle">Fill in your details and capture your face to register.</p>
+
+    <div class="reg-grid">
+
+      <!-- Left: form -->
+      <div>
+        <div class="section-label">Account Details</div>
+        <div class="field">
+          <label>Full Name</label>
+          <input type="text" id="reg-name" placeholder="Enter your full name"/>
+        </div>
+        <div class="field">
+          <label>Email Address</label>
+          <input type="email" id="reg-email" placeholder="Enter your email address"/>
+        </div>
+        <div class="field">
+          <label>Password</label>
+          <input type="password" id="reg-pass" placeholder="Create a strong password"/>
+        </div>
+        <div class="field">
+          <label>Confirm Password</label>
+          <input type="password" id="reg-pass2" placeholder="Re-enter password"/>
+        </div>
+      </div>
+
+      <!-- Right: camera -->
+      <div>
+        <div class="section-label">Face Capture</div>
+
+        <p class="cam-label" style="margin-bottom:12px;">Click the button below to capture your face</p>
+
+        <div class="cam-controls">
+          <button class="btn btn-green btn-sm" id="btn-start" onclick="startCamera()">▶ Start Camera</button>
+        </div>
+      </div>
+
+    </div><!-- /reg-grid -->
+
+    <button class="btn btn-primary" onclick="submitRegister()" style="margin-top:22px;">
+      ✓ &nbsp; Register Account
+    </button>
+
+    <p class="form-note">Already have an account? <a onclick="goTo('page-user')">Login here</a></p>
+
+  </div>
+</div>
+
+
+<!-- ═══════ PAGE: USER LOGIN ═══════ -->
+<div class="page" id="page-user">
+  <div class="card">
+
+    <span class="back-link" onclick="goTo('page-home')">← Back</span>
+
+    <div class="logo">
+      <div class="logo-icon">👤</div>
+      <span class="logo-text">FaceAttend</span>
+    </div>
+    <div class="badge badge-green" style="margin-top:10px;">USER LOGIN</div>
+    <h1>Welcome Back</h1>
+
+    <div class="field" style="margin-top:20px;">
+      <label>Email Address</label>
+      <input type="email" id="login-email" placeholder="Enter your email address"/>
+    </div>
+    <div class="field">
+      <label>Password</label>
+      <input type="password" id="login-pass" placeholder="Enter your password"/>
+    </div>
+
+    <div style="text-align:right; margin:-6px 0 16px;">
+      <a style="font-size:13px; color:var(--accent); cursor:pointer;">Forgot password?</a>
+    </div>
+
+    <button class="btn btn-primary" onclick="submitLogin()">
+      Login
+    </button>
+
+    <p class="form-note">New user? <a onclick="goTo('page-register')">Register here</a></p>
+</div>
+</div>
+
+<!-- ═══════ PAGE: USER PROFILE ═══════ -->
+<div class="page" id="page-profile">
+  <div class="card">
+    <span class="back-link" onclick="logoutUser()">← Logout</span>
+    <div class="logo">
+      <div class="logo-icon">👤</div>
+      <span class="logo-text">FaceAttend</span>
+    </div>
+    <div class="badge badge-green" style="margin-top:10px;">PROFILE</div>
+    <h1 id="profile-username">Your Attendance</h1>
+    <div id="attendance-table-wrap"></div>
+  </div>
+</div>
+</div>
+
+
+<!-- ═══════ PAGE: ADMIN LOGIN ═══════ -->
+<div class="page" id="page-admin">
+  <div class="card">
+
+    <span class="back-link" onclick="goTo('page-home')">← Back</span>
+
+    <div class="logo">
+      <div class="logo-icon">🛡️</div>
+      <span class="logo-text">FaceAttend</span>
+    </div>
+
+    <div class="badge badge-red" style="margin-top:10px;">ADMIN ACCESS</div>
+    <h1>Admin Login</h1>
+
+    <div class="field">
+      <label>Admin Email</label>
+      <input type="email" id="admin-email" placeholder="admin@gmail.com"/>
+    </div>
+
+    <div class="field">
+      <label>Admin Password</label>
+      <input type="password" id="admin-pass" placeholder="Enter admin password"/>
+    </div>
+
+    <div class="field">
+      <label>Access Code</label>
+      <input type="text" id="admin-code" maxlength="6" placeholder="123456"/>
+    </div>
+
+    <button class="btn btn-primary" style="background:var(--red);" onclick="submitAdminLogin()">
+      🛡️ Secure Admin Login
+    </button>
+
+  </div>
+</div>
+
+<div class="page" id="page-admin-dashboard">
+  <div class="card">
+
+    <span class="back-link" onclick="goTo('page-home')">← Logout</span>
+
+    <div class="logo">
+      <div class="logo-icon">📊</div>
+      <span class="logo-text">FaceAttend</span>
+    </div>
+
+    <div class="badge badge-red" style="margin-top:10px;">ADMIN PANEL</div>
+    <h1>Attendance Records</h1>
+
+    <div id="admin-attendance-table"></div>
+
+  </div>
+</div>
+
+<script>
+  /* ── Navigation ───────────────────────────────── */
+  function goTo(id) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+  }
+
+  /* ── Camera ───────────────────────────────────── */
+  let captured = false;
+  async function startCamera() {
+  const name = document.getElementById("reg-name").value.trim();
+
+  if (!name) {
+    alert("Please enter your full name before starting camera");
+    return;
+  }
+
+  try {
+    const response = await fetch("http://127.0.0.1:5000/start-camera", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ username: name })
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      captured = true;
+      alert("Camera started. Please look at the camera.\n30 images will be captured.");
+    } else {
+      alert(data.error || "Failed to start camera");
+    }
+
+  } catch (error) {
+    alert("Backend not connected.\nStart Flask server (app.py)");
+    console.error(error);
+  }
+}
+
+
+  
+
+  /* ── Register submit ──────────────────────────── */
+async function submitRegister(){
+
+const name=document.getElementById('reg-name').value
+const email=document.getElementById('reg-email').value
+const pass=document.getElementById('reg-pass').value
+
+const res = await fetch("http://127.0.0.1:5000/register",{
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({
+name:name,
+email:email,
+password:pass
+})
+})
+
+const data=await res.json()
+
+if(res.ok){
+alert("Registration successful")
+goTo('page-user')
+}else{
+alert(data.error)
+}
+}
+  /* ── User Login ─────────────────────────────── */
+  async function submitLogin() {
+    const email = document.getElementById('login-email').value.trim();
+    const pass = document.getElementById('login-pass').value;
+    if (!email || !pass) { alert('Please enter email and password.'); return; }
+    try {
+      const response = await fetch('http://127.0.0.1:5000/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email, password: pass }),
+        credentials: 'include'
+      });
+      const data = await response.json();
+      if (response.ok) {
+        // Save user name for profile
+        window.currentUserName = data.name;
+        showProfile();
+      } else {
+        alert(data.error || 'Login failed');
+      }
+    } catch (err) {
+      alert('Could not connect to backend.');
+    }
+  }
+
+async function showProfile() {
+
+try {
+
+  const response = await fetch('http://127.0.0.1:5000/profile', {
+    credentials: 'include'
+  });
+
+  const data = await response.json();
+
+  if (response.ok) {
+
+    goTo('page-profile');
+
+    document.getElementById('profile-username').innerText =
+      data.name + "'s Attendance";
+
+    renderAttendanceTable(data.attendance);
+
+  } else {
+
+    document.getElementById('attendance-table-wrap').innerHTML =
+      '<div style="color:red">' + (data.error || 'Failed to load attendance') + '</div>';
+
+  }
+
+} catch (err) {
+
+  document.getElementById('attendance-table-wrap').innerHTML =
+    '<div style="color:red">Could not connect to backend.</div>';
+
+}
+
+}
+
+  function renderAttendanceTable(records) {
+    if (!records || records.length === 0) {
+      document.getElementById('attendance-table-wrap').innerHTML = '<div>No attendance records found.</div>';
+      return;
+    }
+    let html = '<table style="width:100%;margin-top:18px;border-collapse:collapse;">';
+    html += '<tr><th style="text-align:left;padding:6px 8px;border-bottom:1px solid #dce3ef;">Date</th><th style="text-align:left;padding:6px 8px;border-bottom:1px solid #dce3ef;">Period</th><th style="text-align:left;padding:6px 8px;border-bottom:1px solid #dce3ef;">Time</th></tr>';
+    for (const row of records) {
+      html += `<tr><td style="padding:6px 8px;">${row.Date}</td><td style="padding:6px 8px;">${row.Period}</td><td style="padding:6px 8px;">${row.Time}</td></tr>`;
+    }
+    html += '</table>';
+    document.getElementById('attendance-table-wrap').innerHTML = html;
+  }
+
+  function logoutUser() {
+    window.currentUserName = null;
+    goTo('page-user');
+  }
+
+  async function submitAdminLogin(){
+
+const email=document.getElementById("admin-email").value.trim()
+const password=document.getElementById("admin-pass").value
+const code=document.getElementById("admin-code").value
+
+if(!email || !password || !code){
+alert("Please fill all fields")
+return
+}
+
+try{
+
+const res=await fetch("http://127.0.0.1:5000/admin/login",{
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+credentials:"include",
+body:JSON.stringify({
+email:email,
+password:password,
+code:code
+})
+})
+
+const data=await res.json()
+
+if(res.ok){
+
+goTo("page-admin-dashboard")
+loadAdminAttendance()
+
+}else{
+
+alert(data.error)
+
+}
+
+}catch(err){
+
+alert("Backend connection failed")
+
+}
+
+}
+
+
+
+async function loadAdminAttendance(){
+
+const res=await fetch("http://127.0.0.1:5000/admin/attendance",{
+credentials:"include"
+})
+
+const data=await res.json()
+
+let html="<table style='width:100%;margin-top:20px;border-collapse:collapse;'>"
+
+html+="<tr><th>Name</th><th>Date</th><th>Period</th><th>Time</th></tr>"
+
+data.forEach(r=>{
+
+html+=`<tr>
+<td>${r.Name}</td>
+<td>${r.Date}</td>
+<td>${r.Period}</td>
+<td>${r.Time}</td>
+</tr>`
+
+})
+
+html+="</table>"
+
+document.getElementById("admin-attendance-table").innerHTML=html
+
+}
+</script>
+</body>
+</html>
