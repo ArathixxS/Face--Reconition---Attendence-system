@@ -13,3 +13,14 @@ The Face Recognition Attendance System is an AI-powered attendance management so
 * User-Friendly Web Interface
 * Secure Login and Registration System
 * CSV-Based Attendance Management
+
+# Technologies Used
+
+* Python
+* OpenCV
+* Face Recognition Library
+* Flask
+* HTML
+* CSS
+* JavaScript
+* CSV Storage
